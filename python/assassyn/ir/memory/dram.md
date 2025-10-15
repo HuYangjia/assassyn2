@@ -1,20 +1,13 @@
 # DRAM Module
 
-This module simulates an off-chip DRAM module
-interacts with the on-chip pipeline.
+## Summary
 
-This module extends `MemoryBase` in [base.py](./base.py)
-with a single build.
+This module implements DRAM (Dynamic Random Access Memory) simulation for Assassyn's IR. Unlike SRAM, DRAM operates as an off-chip memory module that interacts with the on-chip pipeline through asynchronous request/response mechanisms. The module extends `MemoryBase` to provide DRAM-specific functionality using intrinsic functions for memory request handling, as described in the [intrinsics documentation](../expr/intrinsic.md).
 
-```python
-def DRAM(MemoryBase):
+## Exposed Interfaces
 
-    @downstream.combinational
-    def build(self, we, re, addr, wdata);
-```
+### `class DRAM`
 
-Unlike [SRAM](./sram.py), the data should be handled as soon as response,
-we extend several [intrinsics](../../ir/expr/intrinsic.py) to achieve this.
-Refer to its memory section for more details.
+DRAM memory module that extends MemoryBase for off-chip memory simulation.
 
-It calls and `send_read_request(self, addr, re)` and `send_write_request(self, addr, data, we)`.
+It calls `send_read_request(self, re, addr)` and `send_write_request(self, we, addr, wdata)`.
