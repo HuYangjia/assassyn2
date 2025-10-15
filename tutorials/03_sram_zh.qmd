@@ -72,10 +72,6 @@ import io
 import contextlib
 from typing import Tuple, Optional
 
-lib_path = os.path.abspath(os.path.join(os.path.dirname("downstream.qmd"), '../python/'))
-sys.path.append(lib_path)
-from function_t import run_quietly
-
 lib_path = os.path.abspath(os.path.join(os.path.dirname("sram.qmd"), '../python/'))
 sys.path.append(lib_path)
 
@@ -109,7 +105,7 @@ SRAM(width, depth, init_file) 会在对应模块内生成一个片内存储器�
 | wdata | Bits(width) | 写数据输入 |
 | sram.dout | RegArray | 读数据输出（同步读，一拍后有效） |
 
-> 注意：assassyn 中的 SRAM 提供同步读写接口，读出的数据通过 RegArray 暴露(如果没有读操作，任然保持上一个读的结果)，需要在下游模块中组合使用。
+> 注意：assassyn 中的 SRAM 提供同步读写接口，读出的数据通过 RegArray 暴露(如果没有读操作，仍然保持上一个读的结果)，需要在下游模块中组合使用。
 
 ## 2.2 组合模块：MemUser
 
@@ -361,7 +357,7 @@ test_memory_wide()
 > 
 > hint: 
 > 
-> 1. 目前 `SRAM` 的总大小是 `512bytes` , 一个元素的大小是 `256bits`，因此最多只能存储 `16` 个元素。请不要让资源文件超过这个大小。
+> 1. 目前 `SRAM` 的总大小是 `512bytes` , 一个元素的大小是 `256bits`，因此最多只能存储 `16` 个元素。请不要让资源文件超过这个大小。[More details](https://github.com/Synthesys-Lab/assassyn/blob/master/python/assassyn/ir/memory/sram.md)
 
 
 ## 3. 实践要点
