@@ -2,6 +2,20 @@
 
 This module provides top-level harness generation for Verilog designs, creating the complete system-level module that instantiates and connects all components including modules, arrays, FIFOs, trigger counters, and external modules.
 
+## Design Documents
+
+- [Simulator Design](../../../docs/design/internal/simulator.md) - Simulator design and code generation
+- [Pipeline Architecture](../../../docs/design/internal/pipeline.md) - Credit-based pipeline system
+- [External SystemVerilog Integration](../../../docs/design/external/ExternalSV_zh.md) - External module integration
+- [Architecture Overview](../../../docs/design/arch/arch.md) - Overall system architecture
+
+## Related Modules
+
+- [Verilog Design Generation](./design.md) - Core Verilog design generation
+- [Verilog Elaboration](./elaborate.md) - Main entry point for Verilog generation
+- [Simulator Generation](../simulator/simulator.md) - Simulator code generation
+- [Module Generation](../simulator/modules.md) - Module-to-Rust translation
+
 ## Summary
 
 The top-level harness generation module creates the complete system-level Verilog module that serves as the top-level of the design. It handles the instantiation and connection of all system components, including regular modules, downstream modules, SRAM modules, multi-port arrays, FIFOs, trigger counters, and external modules, while managing the complex interconnections required by the credit-based pipeline architecture.
@@ -49,6 +63,7 @@ This function generates the complete top-level Verilog module that serves as the
    - **Regular Modules**: Connected to trigger counters and FIFO ports
    - **Downstream Modules**: Connected to dependency signals and external values
    - **SRAM Modules**: Connected to memory interfaces
+   - **External Modules**: Hooked up through helper routines that splice in cross-module wires, apply pending external inputs, and avoid duplicating instantiations
 
 7. **Module Connections**: Creates all inter-module connections:
    - **FIFO Connections**: Push/pop signal routing between modules
@@ -71,6 +86,10 @@ The function handles complex system-wide relationships:
 - **Multi-Port Array Management**: Ensures proper write port assignment and connection
 - **FIFO Depth Configuration**: Analyzes FIFO usage to determine appropriate depths
 - **External Module Integration**: Properly integrates external SystemVerilog modules
+  by:
+  - Declaring shared wires once per exposed external value (data + valid)
+  - Queueing assignments per producer so instantiations stay in emission order
+  - Merging per-consumer wiring requirements from `dumper.external_wire_assignments`
 - **Dependency Management**: Handles downstream module dependencies
 - **Credit-based Pipeline**: Implements proper trigger counter and credit management
 
@@ -103,6 +122,8 @@ The function manages several CIRCTDumper state variables:
 - `async_callees`: Async call relationships
 - `array_users`: Array usage mapping
 - `sram_payload_arrays`: SRAM payload arrays
+- `external_wire_assignments`: Deferred cross-module wiring requirements for external IO
+- `external_wire_outputs`: Mapping from external wires to exposed port names
 
 **Project-specific Knowledge Required**:
 - Understanding of [CIRCTDumper state management](/python/assassyn/codegen/verilog/design.md)

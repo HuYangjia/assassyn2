@@ -17,7 +17,7 @@ def identifierize(obj) -> str
 ```
 
 The helper function to get the identifier of the given object. You can change `id_slice` to tune the length of the 
-identifier. The default is slice(-5:-1).
+identifier. The default is slice(-6:-1).
 
 **Parameters:**
 - `obj`: Any Python object to generate an identifier for
@@ -114,8 +114,9 @@ The helper function to run the simulator.
 
 **Explanation:**
 This function executes the Rust-based simulator using cargo. It constructs the appropriate cargo command with 
-the provided manifest path and optional flags. The function prints the command being executed and returns the 
-captured output from the simulator.
+the provided manifest path and optional flags, prints the command being executed, and captures stdout. If the 
+initial invocation fails and `offline` was not explicitly requested, it retries automatically with `--offline` 
+to cover environments without network access.
 
 ### run_verilator
 
@@ -190,24 +191,27 @@ Returns the path to Verilator or None if VERILATOR_ROOT is not set.
 
 **Explanation:**
 This function checks if Verilator is available by verifying that the `VERILATOR_ROOT` environment variable exists 
-and points to a valid directory. It returns 'verilator' if available, which can be used as a command name, or 
-None if not available.
+and points to a valid directory, and by ensuring the `pycde` Python package is importable (a prerequisite for the
+code generation flow). Results are cached in `VERILATOR_CACHE`, and the function returns `'verilator'` on success 
+or `None` otherwise.
 
-### create_and_clean_dir
+### create_dir
 
 ```python
-def create_and_clean_dir(dir_path: str) -> None
+def create_dir(dir_path: str) -> None
 ```
 
-Create a directory and clear its contents if it already exists.
+Create a directory if it doesn't exist.
 
 **Parameters:**
 - `dir_path`: Path to the directory to create
 
+**Raises:**
+- `OSError`: If directory creation fails due to permissions or disk space
+
 **Explanation:**
 This function creates a directory and all necessary parent directories using `os.makedirs(dir_path, exist_ok=True)`. 
-Note that despite the function name suggesting "clean", it does not clear existing directory contents—it only 
-ensures the directory exists. This appears to be an incomplete implementation.
+If the directory already exists, it does nothing. This is a simple utility for ensuring directory existence.
 
 ### namify
 
@@ -242,6 +246,14 @@ PATH_CACHE = None
 ```
 
 Global variable that caches the repository path to avoid repeated environment variable lookups.
+
+### VERILATOR_CACHE
+
+```python
+VERILATOR_CACHE = None
+```
+
+Global variable that caches the result of `has_verilator()` to avoid repeating environment and dependency checks.
 
 ### _cmd_wrapper
 
